@@ -79,3 +79,4 @@ jobs:
 
           kill $SERVER_PID
           echo "All integration tests passed successfully."
+

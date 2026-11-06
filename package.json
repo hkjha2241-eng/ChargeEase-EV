@@ -2,10 +2,12 @@
   "name": "chargeease-ev",
   "version": "1.0.0",
   "description": "ChargeEase EV - High-Performance P2P EV Charging Ecosystem & Telemetry OS",
-  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.x"
   },
   "keywords": [
     "ev-charging",
@@ -19,4 +21,3 @@
   "author": "ChargeEase Core Engineering Team",
   "license": "MIT"
 }
-

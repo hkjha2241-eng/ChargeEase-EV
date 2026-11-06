@@ -555,7 +555,23 @@ const server = http.createServer(async (req, res) => {
     safePath = '/index.html';
   }
 
-  const filePath = path.join(PUBLIC_DIR, safePath);
+  const candidatePaths = [
+    path.join(PUBLIC_DIR, safePath),
+    path.join(process.cwd(), safePath),
+    path.join(__dirname, safePath)
+  ];
+
+  let resolvedPath = candidatePaths[0];
+  for (const cp of candidatePaths) {
+    try {
+      if (fs.existsSync(cp) && fs.statSync(cp).isFile()) {
+        resolvedPath = cp;
+        break;
+      }
+    } catch (e) {}
+  }
+
+  const filePath = resolvedPath;
   const ext = path.extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
@@ -592,13 +608,17 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log('====================================================');
-  console.log('   CHARGEEASE EV - INTELLIGENT P2P EV CHARGING OS   ');
-  console.log('====================================================');
-  console.log(` Server active on: http://localhost:${PORT}`);
-  console.log(` Driver & Host Dual-Mode API Gateway Ready`);
-  console.log(` Zero external dependencies. Production Grade.`);
-  console.log('====================================================');
-});
+module.exports = server;
+
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log('====================================================');
+    console.log('   CHARGEEASE EV - INTELLIGENT P2P EV CHARGING OS   ');
+    console.log('====================================================');
+    console.log(` Server active on: http://localhost:${PORT}`);
+    console.log(` Driver & Host Dual-Mode API Gateway Ready`);
+    console.log(` Zero external dependencies. Production Grade.`);
+    console.log('====================================================');
+  });
+}
 
