@@ -1,0 +1,232 @@
+/**
+ * ChargeEase EV - Leaflet Dark-Matter Map Styles
+ * Custom SVG hardware pin markers, pulse rings, and overlays.
+ */
+
+.map-viewport-wrapper {
+  flex: 1;
+  position: relative;
+  height: 100%;
+  background: #090A0E;
+}
+
+#map-container {
+  width: 100%;
+  height: 100%;
+  background: #090A0E;
+}
+
+#map-container.osm-dark-mode .leaflet-tile-pane {
+  filter: brightness(0.65) invert(1) contrast(2.6) hue-rotate(200deg) saturate(0.25) !important;
+}
+
+/* Custom Station Map Pins */
+.station-div-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.station-map-pin {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+}
+
+.pin-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: rgba(19, 21, 27, 0.95);
+  border: 1.5px solid var(--accent-emerald);
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  font-size: 11px;
+  font-weight: 700;
+  color: #FFFFFF;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.station-map-pin:hover .pin-inner {
+  transform: scale(1.12);
+  border-color: #FFFFFF;
+}
+
+.station-map-pin.available .pin-inner {
+  border-color: var(--accent-emerald);
+  box-shadow: 0 0 14px var(--accent-emerald-glow);
+}
+
+.station-map-pin.in-use .pin-inner {
+  border-color: var(--accent-amber);
+  color: #F3F4F6;
+}
+
+.station-map-pin.offline .pin-inner {
+  border-color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.marker-min {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--accent-amber);
+  color: #000000;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+}
+
+.fast-dot {
+  display: flex;
+  color: var(--accent-emerald);
+  width: 12px;
+  height: 12px;
+}
+
+.fast-dot svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* User Location GPS Marker */
+.custom-div-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.user-position-marker {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-dot {
+  width: 12px;
+  height: 12px;
+  background: #3B82F6;
+  border: 2.5px solid #FFFFFF;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+  z-index: 2;
+}
+
+.user-pulse-ring {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.25);
+  animation: userRadar 2s infinite ease-out;
+  z-index: 1;
+}
+
+@keyframes userRadar {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Floating Map Overlay Controls */
+.map-floating-controls {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reachability-legend-card {
+  background: rgba(19, 21, 27, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-md);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legend-dot.emerald { background: var(--accent-emerald); box-shadow: 0 0 6px var(--accent-emerald); }
+.legend-dot.amber { background: var(--accent-amber); box-shadow: 0 0 6px var(--accent-amber); }
+
+.floating-btn {
+  background: rgba(19, 21, 27, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-medium);
+  color: var(--text-primary);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-fast);
+}
+
+.floating-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: #FFFFFF;
+}
+
+/* Leaflet Tile Tweaks */
+.leaflet-container {
+  font-family: inherit !important;
+}
+
+.leaflet-bar {
+  border: 1px solid var(--border-subtle) !important;
+  box-shadow: var(--shadow-md) !important;
+  border-radius: var(--radius-md) !important;
+  overflow: hidden;
+  margin-right: 20px !important;
+  margin-bottom: 24px !important;
+}
+
+.leaflet-bar a {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: var(--bg-card-hover) !important;
+  color: #FFFFFF !important;
+}
+

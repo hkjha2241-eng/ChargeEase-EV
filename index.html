@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChargeEase EV - Intelligent P2P EV Charging OS</title>
+  <meta name="description" content="ChargeEase EV - High-performance peer-to-peer EV charging ecosystem and real-time telemetry OS.">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/map.css">
+  <link rel="stylesheet" href="css/telemetry.css">
+  <link rel="stylesheet" href="css/host.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Top Global Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <a class="brand-mark" href="#" onclick="window.chargeEaseApp.switchTab('explore'); return false;">
+          <div class="brand-glyph">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+          </div>
+          <span class="brand-name">ChargeEase<span>EV</span></span>
+        </a>
+
+        <!-- City Selector -->
+        <div class="city-select-wrap">
+          <select id="city-selector">
+            <option value="Bengaluru">Bengaluru</option>
+            <option value="Delhi-NCR">Delhi-NCR</option>
+            <option value="Mumbai">Mumbai</option>
+            <option value="Hyderabad">Hyderabad</option>
+          </select>
+          <span class="select-arrow">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- Center Dual Mode Switcher -->
+      <div class="header-center">
+        <div class="mode-switcher-pill">
+          <button id="btn-mode-driver" class="mode-btn active">Driver Mode</button>
+          <button id="btn-mode-host" class="mode-btn">Host Console</button>
+        </div>
+      </div>
+
+      <!-- Right Action Shortcuts -->
+      <div class="header-right">
+        <!-- Live GPS Location Button -->
+        <button id="btn-detect-gps" class="btn btn-sm btn-subtle" title="Detect Live Location via Leaflet" style="display: inline-flex; align-items: center; gap: 6px;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="12 2 15 8 12 6 9 8 12 2"></polygon></svg>
+          <span>Live GPS</span>
+        </button>
+
+        <!-- Fair Pricing Guide Button -->
+        <button id="btn-fair-pricing" class="btn btn-sm btn-subtle" title="Fair Pricing Benchmark Guide" style="display: inline-flex; align-items: center; gap: 6px;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          <span>Fair Pricing</span>
+        </button>
+
+        <!-- Hackathon Pitch Scenarios Button -->
+        <button id="btn-pitch-demo" class="btn btn-sm btn-subtle" title="Hackathon Presentation Controls" style="border-color: rgba(16, 185, 129, 0.4); display: inline-flex; align-items: center; gap: 6px;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <span style="color: var(--accent-emerald);">Pitch Scenarios</span>
+        </button>
+
+        <!-- Live Active Session Chip -->
+        <div id="header-active-session-pill" class="active-session-pill hidden" onclick="window.chargeEaseApp.switchTab('telemetry');">
+          <span class="pulse-dot"></span> Charging 42%
+        </div>
+
+        <!-- Wallet Pill -->
+        <div class="wallet-badge-pill" onclick="window.chargeEaseApp.switchTab('wallet');">
+          <span class="wallet-icon">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+          </span>
+          <span id="header-wallet-balance">₹840.00</span>
+        </div>
+
+        <!-- Audio Feedback Toggle -->
+        <button id="btn-toggle-audio" class="btn-icon" title="Toggle UI Audio">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="main-workspace">
+      <!-- 1. DRIVER WORKSPACE -->
+      <div id="driver-workspace" class="driver-shell">
+        <!-- Vertical Left Navigation Rail -->
+        <nav class="nav-rail">
+          <button class="nav-item active" data-tab="explore" title="Explore Stations">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <span class="nav-label">Explore</span>
+          </button>
+
+          <button class="nav-item" data-tab="range" title="Reachability Range Matcher">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span class="nav-label">Range</span>
+          </button>
+
+          <button class="nav-item" data-tab="scan" title="Scan & Charge">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span class="nav-label">Scan</span>
+          </button>
+
+          <button class="nav-item" data-tab="telemetry" title="Live Charging OS">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            <span class="nav-label">Telemetry</span>
+          </button>
+
+          <button class="nav-item" data-tab="reservations" title="Slot Reservations">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span class="nav-label">Bookings</span>
+          </button>
+
+          <button class="nav-item" data-tab="wallet" title="Digital Wallet">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
+            <span class="nav-label">Wallet</span>
+          </button>
+
+          <button class="nav-item" data-tab="garage" title="My EV Garage">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg>
+            <span class="nav-label">Garage</span>
+          </button>
+        </nav>
+
+        <!-- Dynamic Sidebar Panel (Switches per active tab) -->
+        <aside class="sidebar-panel">
+          <!-- VIEW 1: EXPLORE & MAP SEARCH -->
+          <div id="view-explore" class="tab-view">
+            <div class="panel-header">
+              <h2 class="panel-title">Charging Nodes</h2>
+              <div class="search-bar-wrap">
+                <span class="search-icon">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </span>
+                <input type="text" id="search-input" class="search-input" placeholder="Search by area, socket type, or address...">
+              </div>
+            </div>
+
+            <!-- Filter Chips -->
+            <div class="filter-bar">
+              <button class="filter-chip active" data-filter="ALL">All Nodes</button>
+              <button class="filter-chip" data-filter="AVAILABLE">Available</button>
+              <button class="filter-chip" data-filter="2W">2W / 3W</button>
+              <button class="filter-chip" data-filter="FAST">Fast CCS2</button>
+              <button class="filter-chip" data-filter="VERIFIED">Verified P2P</button>
+            </div>
+
+            <!-- Station Cards List -->
+            <div id="station-cards-container" class="cards-scroll-container">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- VIEW 2: REACHABILITY-AWARE RANGE MATCHER (CORE USP) -->
+          <div id="view-range" class="tab-view hidden">
+            <div class="panel-header">
+              <h2 class="panel-title">Reachability Range Matcher</h2>
+              <p class="text-secondary text-sm">Calculates safe reachable charging nodes considering real efficiency and 20% safety cushion.</p>
+            </div>
+
+            <div class="range-panel-container">
+              <!-- Controls Card -->
+              <div class="range-controls-card">
+                <div class="form-group">
+                  <label class="form-label" for="vehicle-selector">
+                    <span>Active Vehicle</span>
+                  </label>
+                  <select id="vehicle-selector" class="form-select"></select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="soc-slider">
+                    <span>Current Battery SoC</span>
+                    <strong id="soc-slider-val" class="text-emerald">42%</strong>
+                  </label>
+                  <input type="range" id="soc-slider" class="range-slider-input" min="5" max="100" value="42">
+                </div>
+
+                <!-- 3 Metrics Row -->
+                <div class="metrics-row">
+                  <div class="metric-box">
+                    <div class="metric-label">Gross Range</div>
+                    <div id="range-gross-km" class="metric-val">134.4 km</div>
+                  </div>
+                  <div class="metric-box">
+                    <div class="metric-label">Safety Buffer</div>
+                    <div id="range-buffer-km" class="metric-val text-amber">26.9 km (20%)</div>
+                  </div>
+                  <div class="metric-box">
+                    <div class="metric-label">Safe Usable</div>
+                    <div id="range-safe-km" class="metric-val text-emerald">107.5 km</div>
+                  </div>
+                </div>
+
+                <!-- Telemetry specs row -->
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 12px; padding: 0 4px;">
+                  <span>Pack Energy: <strong id="range-pack-energy" style="color:var(--text-primary)">17.0 kWh</strong></span>
+                  <span>Battery SoC: <strong id="range-current-soc" style="color:var(--text-primary)">42%</strong></span>
+                </div>
+              </div>
+
+              <!-- Intelligent Advisory Banner -->
+              <div id="range-advisory-banner" class="advisory-banner advisory-recommended">
+                <!-- Dynamically populated -->
+              </div>
+
+              <!-- Categorized Station List -->
+              <div>
+                <h4 style="font-size: 13px; font-weight: 700; color: #FFFFFF; margin-bottom: 12px;">Reachability Assessment</h4>
+                <div id="reachability-stations-list">
+                  <!-- Dynamically populated -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIEW 3: SCAN & CHARGE -->
+          <div id="view-scan" class="tab-view hidden">
+            <div class="panel-header">
+              <h2 class="panel-title">Scan, Pay & Charge</h2>
+              <p class="text-secondary text-sm">Scan physical station QR or enter Charger ID to initiate charging.</p>
+            </div>
+
+            <div class="scanner-container">
+              <!-- Viewfinder Box -->
+              <div id="scanner-viewport" class="viewfinder-box">
+                <div class="reticle-corner reticle-tl"></div>
+                <div class="reticle-corner reticle-tr"></div>
+                <div class="reticle-corner reticle-bl"></div>
+                <div class="reticle-corner reticle-br"></div>
+                <div class="laser-scan-line"></div>
+                <div style="color: var(--text-muted); font-size: 12px; font-weight: 500;">Aim at Station QR</div>
+              </div>
+
+              <!-- Handshake Progress Box -->
+              <div id="handshake-progress-box" class="handshake-box hidden">
+                <div class="handshake-title">Initiating ChargeEase Hardware Protocol</div>
+                <div class="handshake-steps">
+                  <div id="hs-step-1" class="handshake-step">1. Connecting to station IoT node...</div>
+                  <div id="hs-step-2" class="handshake-step">2. Authenticating ChargeEase protocol handshake...</div>
+                  <div id="hs-step-3" class="handshake-step">3. Engaging physical connector latch lock...</div>
+                  <div id="hs-step-4" class="handshake-step">4. Earth-fault & electrical safety check verified...</div>
+                  <div id="hs-step-5" class="handshake-step">5. Energizing relay contactors. Power flow active.</div>
+                </div>
+              </div>
+
+              <!-- Manual ID Fallback Form -->
+              <form id="form-manual-scan" class="manual-entry-card" style="margin-top: 20px;">
+                <div class="form-group" style="margin-bottom: 12px;">
+                  <label class="form-label" for="manual-station-id">
+                    <span>Manual Charger ID</span>
+                    <span class="text-muted">e.g. CE-BLR-01</span>
+                  </label>
+                  <input type="text" id="manual-station-id" class="form-input" placeholder="CE-BLR-01" value="CE-BLR-01" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                  Connect & Authenticate
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- VIEW 4: LIVE TELEMETRY DASHBOARD (CHARGEEASE OS) -->
+          <div id="view-telemetry" class="tab-view hidden">
+            <div class="panel-header">
+              <h2 class="panel-title">Live Telemetry OS</h2>
+              <p class="text-secondary text-sm">Real-time hardware metrics, CC/CV telemetry and session controls.</p>
+            </div>
+
+            <!-- Empty State if not charging -->
+            <div id="telemetry-empty-state" class="empty-state">
+              <div class="empty-icon">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              </div>
+              <p class="empty-title">No Active Charging Session</p>
+              <p class="empty-desc">Discover a node on the map or scan a QR code to commence session.</p>
+              <button class="btn btn-primary btn-sm" style="margin-top: 14px;" onclick="window.chargeEaseApp.switchTab('explore');">
+                Explore Stations
+              </button>
+            </div>
+
+            <!-- Active Cockpit -->
+            <div id="telemetry-active-view" class="telemetry-cockpit hidden">
+              <!-- Circular SVG Progress Ring Gauge -->
+              <div class="gauge-card">
+                <div class="gauge-svg-wrap">
+                  <svg class="gauge-svg" viewBox="0 0 200 200">
+                    <circle class="gauge-bg-circle" cx="100" cy="100" r="85"></circle>
+                    <circle id="telemetry-gauge-circle" class="gauge-progress-circle" cx="100" cy="100" r="85"></circle>
+                  </svg>
+                  <div class="gauge-inner-content">
+                    <div id="tel-soc" class="gauge-soc-val">42%</div>
+                    <div class="gauge-soc-sub">State of Charge</div>
+                  </div>
+                </div>
+
+                <div class="gauge-station-label">
+                  <div id="tel-station-name" class="gauge-station-name">Koramangala 4th Block Socket</div>
+                  <div id="tel-time" class="gauge-elapsed-timer">00:00:00</div>
+                </div>
+              </div>
+
+              <!-- 4-Quadrant Telemetry Grid -->
+              <div class="telemetry-grid">
+                <div class="tel-cell">
+                  <div class="tel-cell-label">Power Delivered</div>
+                  <div id="tel-power" class="tel-cell-value">3.3 kW</div>
+                  <div class="tel-cell-sub">Constant Current (CC)</div>
+                </div>
+
+                <div class="tel-cell">
+                  <div class="tel-cell-label">Voltage & Current</div>
+                  <div class="tel-cell-value"><span id="tel-voltage">230 V</span> • <span id="tel-current">14.3 A</span></div>
+                  <div class="tel-cell-sub">50 Hz AC Standard</div>
+                </div>
+
+                <div class="tel-cell">
+                  <div class="tel-cell-label">Energy Dispensed</div>
+                  <div id="tel-energy" class="tel-cell-value">0.00 kWh</div>
+                  <div class="tel-cell-sub">+<span id="tel-clean-km">0.0</span> km added</div>
+                </div>
+
+                <div class="tel-cell">
+                  <div class="tel-cell-label">Live Accrued Cost</div>
+                  <div id="tel-cost" class="tel-cell-value">₹0.00</div>
+                  <div class="tel-cell-sub">Billed to Wallet</div>
+                </div>
+              </div>
+
+              <!-- Dynamic Real-time Power Waveform Curve -->
+              <div style="width: 100%; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Live Telemetry Power Waveform (kW)</span>
+                  <span class="badge badge-emerald" style="font-size: 9px;">BMS Stream Active</span>
+                </div>
+                <canvas id="telemetry-power-chart" width="420" height="80" style="width: 100%; height: 80px;"></canvas>
+              </div>
+
+              <!-- Environmental Benefit Card -->
+              <div class="eco-impact-card">
+                <div class="eco-metric">
+                  <div id="tel-co2" class="eco-metric-val">0.00 kg</div>
+                  <div class="eco-metric-label">CO2 Avoided</div>
+                </div>
+                <div style="width: 1px; height: 24px; background: rgba(16, 185, 129, 0.2);"></div>
+                <div class="eco-metric">
+                  <div class="eco-metric-val">100% Clean</div>
+                  <div class="eco-metric-label">Grid Offset</div>
+                </div>
+              </div>
+
+              <!-- Controls -->
+              <div class="telemetry-actions">
+                <button id="btn-tel-pause" class="btn btn-subtle">
+                  Pause
+                </button>
+                <button id="btn-tel-stop" class="btn btn-danger">
+                  Stop & Invoice
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIEW 5: RESERVATIONS -->
+          <div id="view-reservations" class="tab-view hidden">
+            <div class="panel-header">
+              <h2 class="panel-title">15-Minute Slot Holds</h2>
+              <p class="text-secondary text-sm">Guaranteed socket reservation with live anti-stranding lock.</p>
+            </div>
+
+            <div style="padding: 20px;">
+              <!-- Active Lock Banner -->
+              <div id="active-lock-banner" class="advisory-banner advisory-recommended hidden" style="margin-bottom: 20px;">
+                <div class="advisory-icon">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <div class="advisory-content" style="flex:1;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="advisory-title">Active 15-Minute Hold Lock</span>
+                    <strong id="lock-timer" style="font-size: 14px; font-weight: 800;">14:52</strong>
+                  </div>
+                  <div style="font-size: 12px; margin-top: 4px;">
+                    <div id="lock-station-name" style="font-weight: 600; color: #FFFFFF;">Koramangala 4th Block Smart Socket</div>
+                    <div>Slot: <span id="lock-slot-time">13:00 - 14:00</span> • Pass: <strong id="lock-pass-code">PASS-8921</strong></div>
+                  </div>
+                </div>
+              </div>
+
+              <h4 style="font-size: 13px; font-weight: 700; color: #FFFFFF; margin-bottom: 12px;">Bookings History</h4>
+              <div id="reservations-history-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- VIEW 6: DIGITAL WALLET & UPI -->
+          <div id="view-wallet" class="tab-view hidden">
+            <div class="panel-header">
+              <h2 class="panel-title">ChargeEase Wallet</h2>
+              <p class="text-secondary text-sm">Instant digital wallet with automated session settlement and UPI top-ups.</p>
+            </div>
+
+            <div style="padding: 20px; display: flex; flex-direction: column; gap: 20px;">
+              <!-- Balance Card -->
+              <div class="gauge-card" style="padding: 24px; text-align: center;">
+                <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Available Balance</div>
+                <div id="wallet-display-balance" style="font-size: 36px; font-weight: 800; color: #FFFFFF; margin: 8px 0;">₹840.00</div>
+                <div style="font-size: 11px; color: var(--accent-emerald); font-weight: 600;">Linked with Auto-Debit Settlement</div>
+              </div>
+
+              <!-- Top-up Form -->
+              <form id="form-topup" class="range-controls-card">
+                <div style="font-size: 13px; font-weight: 700; color: #FFFFFF; margin-bottom: 12px;">Quick Wallet Top-up</div>
+                
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px;">
+                  <button type="button" class="btn btn-subtle btn-sm preset-btn" data-amount="200">+₹200</button>
+                  <button type="button" class="btn btn-subtle btn-sm preset-btn" data-amount="500">+₹500</button>
+                  <button type="button" class="btn btn-subtle btn-sm preset-btn" data-amount="1000">+₹1,000</button>
+                  <button type="button" class="btn btn-subtle btn-sm preset-btn" data-amount="2000">+₹2,000</button>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="topup-amount-input">Custom Amount (INR)</label>
+                  <input type="number" id="topup-amount-input" class="form-input" placeholder="Enter amount in ₹" min="50" required>
+                </div>
+
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 600;">Payment Provider</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;">
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; background: var(--bg-surface-elevated); padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); cursor: pointer;">
+                    <input type="radio" name="upi-provider" value="Google Pay" checked> Google Pay
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; background: var(--bg-surface-elevated); padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); cursor: pointer;">
+                    <input type="radio" name="upi-provider" value="PhonePe"> PhonePe
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; background: var(--bg-surface-elevated); padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); cursor: pointer;">
+                    <input type="radio" name="upi-provider" value="Paytm"> Paytm UPI
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; background: var(--bg-surface-elevated); padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); cursor: pointer;">
+                    <input type="radio" name="upi-provider" value="BHIM"> BHIM UPI
+                  </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                  Add Funds via UPI
+                </button>
+              </form>
+
+              <!-- Transaction Ledger -->
+              <div>
+                <h4 style="font-size: 13px; font-weight: 700; color: #FFFFFF; margin-bottom: 12px;">Transaction Ledger</h4>
+                <div id="wallet-ledger-container" style="display: flex; flex-direction: column; gap: 8px;">
+                  <!-- Dynamically populated -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIEW 7: MY EV GARAGE & ECO IMPACT -->
+          <div id="view-garage" class="tab-view hidden">
+            <div class="panel-header">
+              <h2 class="panel-title">My EV Garage</h2>
+              <p class="text-secondary text-sm">Vehicle diagnostics, charging profiles and carbon offsets.</p>
+            </div>
+
+            <div style="padding: 20px; display: flex; flex-direction: column; gap: 20px;">
+              <div class="range-controls-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <h3 id="garage-vehicle-name" style="font-size: 16px; font-weight: 700; color: #FFFFFF;">Tata Nexon EV</h3>
+                  <span class="badge badge-emerald">Active Vehicle</span>
+                </div>
+
+                <div class="drawer-spec-grid">
+                  <div class="spec-cell">
+                    <div class="spec-cell-label">Battery Capacity</div>
+                    <div id="garage-pack" class="spec-cell-value">40.5 kWh</div>
+                  </div>
+                  <div class="spec-cell">
+                    <div class="spec-cell-label">Real Range</div>
+                    <div id="garage-real" class="spec-cell-value">320 km</div>
+                  </div>
+                  <div class="spec-cell">
+                    <div class="spec-cell-label">Claimed Range</div>
+                    <div id="garage-claimed" class="spec-cell-value">465 km</div>
+                  </div>
+                  <div class="spec-cell">
+                    <div class="spec-cell-label">Consumption</div>
+                    <div id="garage-efficiency" class="spec-cell-value">126.5 Wh/km</div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 14px; font-size: 12px; color: var(--text-secondary);">
+                  Compatible Connector: <strong id="garage-recommended-socket" style="color: #FFFFFF;">Type 2 AC or CCS 2 Fast</strong>
+                </div>
+              </div>
+
+              <!-- Carbon Offset Lifetime -->
+              <div class="host-section-card">
+                <h3 class="host-section-title">Lifetime Environmental Dividends</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div class="metric-box">
+                    <div class="metric-label">CO2 Prevented</div>
+                    <div class="metric-val text-emerald">1,284 kg</div>
+                  </div>
+                  <div class="metric-box">
+                    <div class="metric-label">Clean Kilometers</div>
+                    <div class="metric-val">10,840 km</div>
+                  </div>
+                  <div class="metric-box">
+                    <div class="metric-label">Equivalent Trees</div>
+                    <div class="metric-val">58 Mature Trees</div>
+                  </div>
+                  <div class="metric-box">
+                    <div class="metric-label">Fuel Savings</div>
+                    <div class="metric-val text-emerald">₹68,400</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Full-bleed Leaflet Map Viewport -->
+        <div class="map-viewport-wrapper">
+          <div id="map-container"></div>
+
+          <!-- Floating Reachability Legend -->
+          <div class="map-floating-controls">
+            <div class="reachability-legend-card">
+              <div class="legend-item">
+                <span class="legend-dot emerald"></span>
+                <span>Safe Reachable (20% Cushion)</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot amber"></span>
+                <span>Buffer at Risk</span>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <!-- Recenter Button -->
+              <button id="btn-recenter" class="floating-btn" title="Re-center My Vehicle">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+              </button>
+              <!-- Basemap Style Switcher -->
+              <button id="btn-toggle-tiles" class="floating-btn" title="Toggle Basemap (ESRI Dark / OSM Dark)">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Station Details Drawer (Slides In from Right) -->
+          <div id="station-drawer" class="station-drawer hidden">
+            <div class="drawer-header">
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <h3 id="drawer-station-name" style="font-size: 16px; font-weight: 700; color: #FFFFFF;">Station Name</h3>
+                  <span id="drawer-verified-badge" class="badge badge-emerald">Verified Host</span>
+                </div>
+                <p id="drawer-station-address" style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Address</p>
+              </div>
+              <button id="btn-close-drawer" class="btn-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+
+            <div class="drawer-body">
+              <!-- Spec Grid -->
+              <div class="drawer-spec-grid">
+                <div class="spec-cell">
+                  <div class="spec-cell-label">Power Rating</div>
+                  <div id="drawer-power" class="spec-cell-value">3.3 kW</div>
+                </div>
+                <div class="spec-cell">
+                  <div class="spec-cell-label">Connector Type</div>
+                  <div id="drawer-type" class="spec-cell-value">16A Smart Socket</div>
+                </div>
+                <div class="spec-cell">
+                  <div class="spec-cell-label">Tariff Rate</div>
+                  <div id="drawer-tariff" class="spec-cell-value">₹12.50 / kWh</div>
+                </div>
+                <div class="spec-cell">
+                  <div class="spec-cell-label">Parking Tariff</div>
+                  <div id="drawer-parking" class="spec-cell-value">Free Parking</div>
+                </div>
+              </div>
+
+              <!-- Distance & Host Info -->
+              <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 11px; color: var(--text-secondary);">Hosted By</div>
+                  <div id="drawer-host-name" style="font-size: 13px; font-weight: 600; color: #FFFFFF; margin-top: 2px;">Dr. Vikram Malhotra</div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 11px; color: var(--text-secondary);">Proximity</div>
+                  <div id="drawer-distance" style="font-size: 13px; font-weight: 600; color: var(--accent-emerald); margin-top: 2px;">1.4 km away</div>
+                </div>
+              </div>
+
+              <!-- Operating Hours & Rating -->
+              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary);">
+                <span>Hours: <strong id="drawer-access" style="color:var(--text-primary)">24/7 Public Access</strong></span>
+                <span>Rating: <strong id="drawer-rating" style="color:var(--text-primary)">4.9 (184 sessions)</strong></span>
+              </div>
+
+              <!-- Amenities -->
+              <div>
+                <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Station Amenities</div>
+                <div id="drawer-amenities" class="amenities-wrap"></div>
+              </div>
+
+              <!-- Slot Picker for 15-Minute Reservation -->
+              <div>
+                <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Select 1-Hour Time Slot (15-min Guaranteed Hold)</div>
+                <div id="drawer-slots" class="slots-grid"></div>
+              </div>
+
+              <!-- Fair Pricing Assessment Card -->
+              <div id="drawer-fair-pricing-card" style="background: var(--bg-card); padding: 12px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <span style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Fair Pricing Assessment</span>
+                  <span id="drawer-fair-pricing-badge" class="badge badge-emerald">Fair Market Rate</span>
+                </div>
+                <div id="drawer-fair-pricing-desc" style="font-size: 12px; color: var(--text-primary); line-height: 1.4;">
+                  Standard regulated rate. EV car running cost: ~₹1.56/km (78% savings vs petrol).
+                </div>
+              </div>
+            </div>
+
+            <!-- Drawer Footer Actions -->
+            <div class="drawer-footer">
+              <button id="btn-drawer-nav" class="btn btn-subtle" style="flex:1;">
+                Navigate
+              </button>
+              <button id="btn-drawer-reserve" class="btn btn-subtle" style="flex:1;">
+                Reserve Slot
+              </button>
+              <button id="btn-drawer-charge" class="btn btn-emerald" style="flex:1.4;">
+                Start Charging
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. HOST CONSOLE WORKSPACE -->
+      <div id="host-workspace" class="host-workspace hidden">
+        <div class="host-container">
+          <div class="host-header-row">
+            <div>
+              <h1 class="host-page-title">P2P Host Console</h1>
+              <p class="host-page-subtitle">Monetize residential 16A sockets or dedicated EVSE on the ChargeEase P2P Network.</p>
+            </div>
+            <div class="badge badge-emerald">
+              Host Verified Node
+            </div>
+          </div>
+
+          <!-- Remote Hardware Relay Switch (USP) -->
+          <div class="hardware-control-card">
+            <div class="hardware-info-left">
+              <div class="hardware-title">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+                Remote IoT Contactor Relay Control
+              </div>
+              <p class="hardware-desc">Remotely energize or isolate your physical socket from the grid. When switched OFF, no unauthorized power can be drawn and node appears offline on the map.</p>
+              <div id="host-relay-status-label" class="relay-status-text online">POWER ACTIVE (230V ONLINE)</div>
+            </div>
+
+            <div>
+              <label class="switch-wrapper">
+                <input type="checkbox" id="host-relay-switch" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- KPI Revenue Cards -->
+          <div class="host-kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Today's Revenue</span>
+                <span class="kpi-icon">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                </span>
+              </div>
+              <div id="host-today-rev" class="kpi-value">₹462.50</div>
+              <div class="kpi-sub">85% host net payout share</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Monthly Payout</span>
+                <span class="kpi-icon">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline></svg>
+                </span>
+              </div>
+              <div id="host-month-rev" class="kpi-value">₹12,480.00</div>
+              <div class="kpi-sub">Transferred to HDFC **4821</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Units Dispensed</span>
+                <span class="kpi-icon">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                </span>
+              </div>
+              <div id="host-units" class="kpi-value">998.4 kWh</div>
+              <div class="kpi-sub">184 complete sessions</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Host Score</span>
+                <span class="kpi-icon">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </span>
+              </div>
+              <div id="host-rating" class="kpi-value">4.9 ★</div>
+              <div class="kpi-sub">Top 5% Superhost in BLR</div>
+            </div>
+          </div>
+
+          <!-- Tariff & Onboarding Row -->
+          <div class="host-grid-2col">
+            <!-- Tariff Setter -->
+            <div class="host-section-card">
+              <h3 class="host-section-title">Tariff & Operating Rules</h3>
+              <div class="form-group">
+                <label class="form-label" for="host-tariff-input">
+                  <span>Energy Tariff (INR / kWh)</span>
+                </label>
+                <input type="number" id="host-tariff-input" class="form-input" value="12.50" step="0.5">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Access Schedule</label>
+                <select class="form-select">
+                  <option>24/7 Public Access</option>
+                  <option>06:00 AM - 11:00 PM (Daytime Only)</option>
+                  <option>Night Tariff Only (10:00 PM - 06:00 AM)</option>
+                </select>
+              </div>
+
+              <button id="btn-save-tariff" class="btn btn-primary" style="margin-top: 8px;">
+                Update Network Tariff
+              </button>
+            </div>
+
+            <!-- Onboard Wizard -->
+            <div class="host-section-card">
+              <h3 class="host-section-title">Onboard New Socket or Charger</h3>
+              <form id="form-onboard-socket">
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label" for="onboard-name">Socket Name</label>
+                    <input type="text" id="onboard-name" class="form-input" placeholder="e.g. Indiranagar Driveway 16A" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="onboard-city">City</label>
+                    <select id="onboard-city" class="form-select">
+                      <option value="Bengaluru">Bengaluru</option>
+                      <option value="Delhi-NCR">Delhi-NCR</option>
+                      <option value="Mumbai">Mumbai</option>
+                      <option value="Hyderabad">Hyderabad</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="onboard-address">Street Address</label>
+                  <input type="text" id="onboard-address" class="form-input" placeholder="Full residential or commercial address" required>
+                </div>
+
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label" for="onboard-lat">Latitude</label>
+                    <input type="number" id="onboard-lat" class="form-input" step="0.0001" value="12.9716" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="onboard-lng">Longitude</label>
+                    <input type="number" id="onboard-lng" class="form-input" step="0.0001" value="77.5946" required>
+                  </div>
+                </div>
+
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label" for="onboard-type">Socket Type</label>
+                    <select id="onboard-type" class="form-select">
+                      <option value="16A 3-Pin Smart Socket">16A 3-Pin Smart Socket</option>
+                      <option value="Type 2 AC Charger">Type 2 AC Charger</option>
+                      <option value="CCS 2 DC Fast Charger">CCS 2 DC Fast Charger</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="onboard-power">Power (kW)</label>
+                    <input type="number" id="onboard-power" class="form-input" step="0.1" value="3.3" required>
+                  </div>
+                </div>
+
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label" for="onboard-tariff">Tariff (₹/kWh)</label>
+                    <input type="number" id="onboard-tariff" class="form-input" step="0.5" value="12.0" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="onboard-hours">Access Window</label>
+                    <input type="text" id="onboard-hours" class="form-input" value="24/7 Public Access">
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-emerald" style="width: 100%; margin-top: 10px;">
+                  Deploy & List on ChargeEase Network
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Official Tax Invoice Modal -->
+    <div id="invoice-modal" class="modal-backdrop hidden">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <div class="modal-title">Tax Invoice & Session Summary</div>
+          <button id="btn-close-invoice" class="btn-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="tax-invoice-wrap">
+            <div class="invoice-badge-header">
+              <div class="inv-company">ChargeEase<span>EV</span> Private Limited</div>
+              <span class="badge badge-emerald">PAID VIA WALLET</span>
+            </div>
+
+            <div class="inv-meta-grid">
+              <div>Invoice No: <strong id="inv-id">INV-892182</strong></div>
+              <div>Date & Time: <strong id="inv-date">06 Nov 2026</strong></div>
+              <div>Station: <strong id="inv-station">Koramangala 4th Block</strong></div>
+              <div>Host: <strong id="inv-host">Dr. Vikram Malhotra</strong></div>
+              <div>Vehicle: <strong id="inv-vehicle">Tata Nexon EV</strong></div>
+              <div>Duration: <strong id="inv-duration">00:24:18</strong></div>
+            </div>
+
+            <table class="invoice-table">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th style="text-align: right;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Energy Delivered (<span id="inv-energy">6.8 kWh</span> @ <span id="inv-tariff">₹12.50</span>)</td>
+                  <td id="inv-energy-charge" class="amount">₹85.00</td>
+                </tr>
+                <tr>
+                  <td>ChargeEase Platform & Connectivity Fee</td>
+                  <td id="inv-platform-fee" class="amount">₹2.50</td>
+                </tr>
+                <tr>
+                  <td>Host Parking Fee</td>
+                  <td id="inv-parking-fee" class="amount">₹0.00</td>
+                </tr>
+                <tr>
+                  <td>CGST (9%)</td>
+                  <td id="inv-cgst" class="amount">₹7.88</td>
+                </tr>
+                <tr>
+                  <td>SGST (9%)</td>
+                  <td id="inv-sgst" class="amount">₹7.88</td>
+                </tr>
+                <tr class="total-row">
+                  <td>Total Settled Amount</td>
+                  <td id="inv-total" class="amount text-emerald">₹103.26</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="invoice-green-stamp">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 4 13C4 7 12 2 20 2c0 8-5 16-11 18Z"></path><path d="M2 21c0-4 3-8 8-8"></path></svg>
+              <span>Certified Carbon Offset: <strong id="inv-co2">5.58 kg CO2</strong> avoided during this session.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-primary" onclick="window.print();">
+            Export PDF Invoice
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Location Analysis & Nearby Chargers Modal -->
+    <div id="location-analysis-modal" class="modal-backdrop hidden">
+      <div class="modal-dialog" style="max-width: 520px;">
+        <div class="modal-header">
+          <div class="modal-title">Location Analysis & Nearby Chargers</div>
+          <button id="btn-close-loc-modal" class="btn-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <!-- Location Header Card -->
+            <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span class="location-analyzed-chip">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+                  GPS Coordinates Locked
+                </span>
+                <span id="loc-accuracy-badge" class="badge badge-emerald">±15m High Precision</span>
+              </div>
+              <div id="loc-coords-display" style="font-size: 14px; font-weight: 700; color: #FFFFFF;">Lat: 12.9352, Lng: 77.6245</div>
+              <div id="loc-corridor-desc" style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Koramangala / Indiranagar EV Mobility Corridor</div>
+            </div>
+
+            <!-- Analysis Summary Verdict -->
+            <div id="loc-verdict-box" class="advisory-banner advisory-recommended">
+              <div class="advisory-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              </div>
+              <div class="advisory-content">
+                <div class="advisory-title">Safe Corridor Confirmed</div>
+                <div id="loc-verdict-text" class="advisory-desc">3 nodes reachable within safe 20% cushion. Nearest socket: Koramangala 4th Block (1.4 km).</div>
+              </div>
+            </div>
+
+            <!-- Top 3 Nearby Ranked Stations -->
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: #FFFFFF; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.3px;">Nearest Ranked Charging Nodes</div>
+              <div id="loc-nearby-list" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-primary" onclick="document.getElementById('location-analysis-modal').classList.add('hidden');">
+            View on Map
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fair Pricing Index & Fuel Parity Guide Modal -->
+    <div id="fair-pricing-modal" class="modal-backdrop hidden">
+      <div class="modal-dialog" style="max-width: 540px;">
+        <div class="modal-header">
+          <div class="modal-title">Fair Pricing Index for EV Charging</div>
+          <button id="btn-close-pricing-modal" class="btn-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4;">
+              ChargeEase EV benchmarks network tariffs against Indian regulatory norms (CERC / SERC) and DISCOM wholesale commercial base rates to prevent price gouging.
+            </p>
+
+            <!-- Benchmark Table -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div class="pricing-benchmark-row">
+                <div>
+                  <div style="font-size: 13px; font-weight: 700; color: #FFFFFF;">P2P Residential 16A Socket</div>
+                  <div style="font-size: 11px; color: var(--text-secondary);">Base DISCOM (₹7.20) + Host Incentive</div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 14px; font-weight: 800; color: var(--accent-emerald);">₹10.00 – ₹13.00</div>
+                  <div style="font-size: 10px; color: var(--text-muted);">per kWh (Fair Range)</div>
+                </div>
+              </div>
+
+              <div class="pricing-benchmark-row">
+                <div>
+                  <div style="font-size: 13px; font-weight: 700; color: #FFFFFF;">Destination AC (Type 2, 7.4–22 kW)</div>
+                  <div style="font-size: 11px; color: var(--text-secondary);">Malls, RWAs, Tech Parks</div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 14px; font-weight: 800; color: var(--accent-emerald);">₹13.00 – ₹16.00</div>
+                  <div style="font-size: 10px; color: var(--text-muted);">per kWh (Fair Range)</div>
+                </div>
+              </div>
+
+              <div class="pricing-benchmark-row">
+                <div>
+                  <div style="font-size: 13px; font-weight: 700; color: #FFFFFF;">DC Fast Charger (CCS 2, 30–60 kW)</div>
+                  <div style="font-size: 11px; color: var(--text-secondary);">High-tension connection & Capex</div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 14px; font-weight: 800; color: var(--accent-amber);">₹18.00 – ₹23.00</div>
+                  <div style="font-size: 10px; color: var(--text-muted);">per kWh (Fair Range)</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Petrol vs EV Fuel Parity Card -->
+            <div class="pricing-calc-box">
+              <div style="font-size: 12px; font-weight: 700; color: #FFFFFF; text-transform: uppercase; margin-bottom: 8px;">Real-World Cost Parity Comparison</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center;">
+                <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                  <div style="font-size: 11px; color: var(--text-muted);">Petrol Car (@ ₹102/L)</div>
+                  <div style="font-size: 16px; font-weight: 800; color: var(--accent-red); margin-top: 2px;">₹7.28 / km</div>
+                </div>
+                <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                  <div style="font-size: 11px; color: var(--text-muted);">EV Car (@ ₹12.50/kWh)</div>
+                  <div style="font-size: 16px; font-weight: 800; color: var(--accent-emerald); margin-top: 2px;">₹1.56 / km</div>
+                </div>
+              </div>
+              <div style="margin-top: 10px; font-size: 12px; color: var(--accent-emerald); font-weight: 600; text-align: center;">
+                Net Driving Savings: 78% reduction in running costs.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-primary" onclick="document.getElementById('fair-pricing-modal').classList.add('hidden');">
+            Got it
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pitch Scenarios Modal (Hackathon Presenter Cockpit) -->
+    <div id="pitch-scenarios-modal" class="modal-backdrop hidden">
+      <div class="modal-dialog" style="max-width: 540px;">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Hackathon Presentation Triggers</div>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">One-click scenario simulations for judges & technical evaluation</div>
+          </div>
+          <button id="btn-close-pitch-modal" class="btn-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Trigger 1 -->
+            <div class="reach-card" style="border-left: 3px solid var(--accent-red); cursor: pointer;" id="trigger-scenario-low-bat">
+              <div class="reach-card-left">
+                <div class="reach-name" style="color: #FFFFFF; font-size: 14px;">1. Critical Low Battery Alert (12% SoC)</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
+                  Demonstrates the 20% safety cushion math. Triggers the anti-stranding advisory and auto-reroutes to a safe 16A socket.
+                </div>
+              </div>
+              <button class="btn btn-sm btn-subtle" style="flex-shrink: 0;">Trigger</button>
+            </div>
+
+            <!-- Trigger 2 -->
+            <div class="reach-card" style="border-left: 3px solid var(--accent-emerald); cursor: pointer;" id="trigger-scenario-safe-commute">
+              <div class="reach-card-left">
+                <div class="reach-name" style="color: #FFFFFF; font-size: 14px;">2. Safe Corridor Match (45% SoC)</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
+                  Shows normal urban commuter routing with full 20% safety buffer preserved on Leaflet.
+                </div>
+              </div>
+              <button class="btn btn-sm btn-subtle" style="flex-shrink: 0;">Trigger</button>
+            </div>
+
+            <!-- Trigger 3 -->
+            <div class="reach-card" style="border-left: 3px solid var(--accent-blue); cursor: pointer;" id="trigger-scenario-fast-charge">
+              <div class="reach-card-left">
+                <div class="reach-name" style="color: #FFFFFF; font-size: 14px;">3. Launch DC Fast Session (50 kW CCS2)</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
+                  Instantly authenticates cable lock, opens the Telemetry OS cockpit, and streams the real-time BMS waveform.
+                </div>
+              </div>
+              <button class="btn btn-sm btn-subtle" style="flex-shrink: 0;">Trigger</button>
+            </div>
+
+            <!-- Trigger 4 -->
+            <div class="reach-card" style="border-left: 3px solid var(--accent-amber); cursor: pointer;" id="trigger-scenario-host-relay">
+              <div class="reach-card-left">
+                <div class="reach-name" style="color: #FFFFFF; font-size: 14px;">4. Remote IoT Contactor Relay Disconnect</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
+                  Switches to Host Console, isolates residential socket from grid, and plays mechanical relay sound.
+                </div>
+              </div>
+              <button class="btn btn-sm btn-subtle" style="flex-shrink: 0;">Trigger</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <div style="font-size: 11px; color: var(--text-muted); flex: 1; display: flex; align-items: center;">
+            Pro-tip: Press <strong style="color: #FFFFFF; margin: 0 4px;">P</strong> on your keyboard to toggle this anytime.
+          </div>
+          <button class="btn btn-subtle" onclick="document.getElementById('pitch-scenarios-modal').classList.add('hidden');">
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Application Modules -->
+  <script src="js/icons.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/reachability.js"></script>
+  <script src="js/telemetry.js"></script>
+  <script src="js/reservation.js"></script>
+  <script src="js/wallet.js"></script>
+  <script src="js/host.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
+

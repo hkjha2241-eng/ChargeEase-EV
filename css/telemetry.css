@@ -1,0 +1,317 @@
+/**
+ * ChargeEase EV - Live Charging Telemetry & Tax Invoice Styles
+ * Circular SVG gauge animation, real-time energy telemetry metrics,
+ * and high-fidelity tax invoice breakdown.
+ */
+
+.telemetry-cockpit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  gap: 24px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Circular Gauge Card */
+.gauge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 28px 20px 20px;
+  box-shadow: var(--shadow-md);
+}
+
+.gauge-svg-wrap {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.gauge-bg-circle {
+  fill: none;
+  stroke: var(--bg-surface-elevated);
+  stroke-width: 12;
+}
+
+.gauge-progress-circle {
+  fill: none;
+  stroke: var(--accent-emerald);
+  stroke-width: 12;
+  stroke-linecap: round;
+  stroke-dasharray: 534.07; /* 2 * PI * 85 */
+  stroke-dashoffset: 267.03;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.5));
+}
+
+.gauge-inner-content {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-soc-val {
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+.gauge-soc-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.gauge-station-label {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.gauge-station-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.gauge-elapsed-timer {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* 4-Quadrant Telemetry Grid */
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.tel-cell {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tel-cell-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 6px;
+}
+
+.tel-cell-value {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #FFFFFF;
+}
+
+.tel-cell-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Eco Impact Card */
+.eco-impact-card {
+  width: 100%;
+  background: var(--accent-emerald-subtle);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.eco-metric {
+  text-align: center;
+}
+
+.eco-metric-val {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-emerald);
+}
+
+.eco-metric-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* Session Controls */
+.telemetry-actions {
+  display: flex;
+  width: 100%;
+  gap: 12px;
+}
+
+.telemetry-actions .btn {
+  flex: 1;
+  padding: 12px;
+}
+
+/* Tax Invoice Modal Styles */
+.tax-invoice-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.invoice-badge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--border-medium);
+}
+
+.inv-company {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: #FFFFFF;
+}
+
+.inv-company span {
+  color: var(--accent-emerald);
+}
+
+.inv-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.inv-meta-grid strong {
+  color: var(--text-primary);
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.invoice-table th {
+  text-align: left;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.invoice-table td {
+  padding: 8px 0;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.invoice-table td.amount {
+  text-align: right;
+  font-weight: 600;
+}
+
+.invoice-table tr.total-row td {
+  font-size: 15px;
+  font-weight: 800;
+  color: #FFFFFF;
+  padding-top: 12px;
+  border-bottom: none;
+  border-top: 2px solid var(--border-medium);
+}
+
+.invoice-green-stamp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--accent-emerald-subtle);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: var(--accent-emerald);
+}
+
+/* Official Print & PDF Export Styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #invoice-modal, #invoice-modal * {
+    visibility: visible;
+  }
+  #invoice-modal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: #FFFFFF !important;
+    backdrop-filter: none !important;
+  }
+  #invoice-modal .modal-dialog {
+    box-shadow: none !important;
+    border: 1px solid #000000 !important;
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  #invoice-modal .modal-title,
+  #invoice-modal .inv-company,
+  #invoice-modal .invoice-table td,
+  #invoice-modal .invoice-table tr.total-row td {
+    color: #000000 !important;
+  }
+  #invoice-modal .inv-meta-grid {
+    background: #F3F4F6 !important;
+    border-color: #E5E7EB !important;
+    color: #1F2937 !important;
+  }
+  #invoice-modal .inv-meta-grid strong {
+    color: #000000 !important;
+  }
+  #invoice-modal .btn, #invoice-modal .modal-footer, #invoice-modal #btn-close-invoice {
+    display: none !important;
+  }
+}
+
+
