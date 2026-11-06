@@ -1,6 +1,10 @@
 # ChargeEase EV
 ### Intelligent Peer-to-Peer Electric Vehicle Charging Ecosystem & Telemetry OS
 
+[![ChargeEase EV CI](https://github.com/hkjha2241-eng/ChargeEase-EV/actions/workflows/ci.yml/badge.svg)](https://github.com/hkjha2241-eng/ChargeEase-EV/actions/workflows/ci.yml)
+[![Node.js](https://img.shields.io/badge/Node.js-v20%2B-10B981?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 **ChargeEase EV** is an enterprise-grade, reachability-aware P2P electric vehicle charging platform engineered for high-density metropolitan ecosystems across India (Bengaluru, Delhi-NCR, Mumbai, and Hyderabad).
 
 Built with precision aesthetic principles inspired by Apple and Uber design systems, ChargeEase EV features a dark-graphite palette, modular component architecture, and zero runtime package bloat.
@@ -13,6 +17,7 @@ Built with precision aesthetic principles inspired by Apple and Uber design syst
 - **Zero External Dependencies:** Built entirely with native Node.js and standard web primitives (Web Audio API, Leaflet, ES6 Modules).
 - **Dual Mode System:** Seamlessly switches between **Driver Mode** and **Host Console**.
 - **Hackathon Level Engineering:** Clean, modular codebase structured for code reviews, hackathon presentations, and live demos.
+- **Presenter Mode:** Press `P` key or click "Pitch Scenarios" in the top bar for one-click judge demonstration triggers.
 
 ---
 

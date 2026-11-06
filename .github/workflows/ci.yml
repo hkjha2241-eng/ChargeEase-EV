@@ -1,0 +1,81 @@
+name: ChargeEase EV CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Syntax & Lint Validation
+        run: |
+          node -e "
+          const fs = require('fs');
+          const files = [
+            'server.js',
+            'js/data.js',
+            'js/icons.js',
+            'js/audio.js',
+            'js/map.js',
+            'js/navigation.js',
+            'js/reachability.js',
+            'js/telemetry.js',
+            'js/reservation.js',
+            'js/wallet.js',
+            'js/host.js',
+            'js/app.js'
+          ];
+          for (const f of files) {
+            new Function(fs.readFileSync(f, 'utf8'));
+            console.log('✓ Validated:', f);
+          }
+          console.log('All JS modules syntax valid.');
+          "
+
+      - name: Verify Server Startup & API Endpoints
+        run: |
+          node server.js &
+          SERVER_PID=$!
+          sleep 2
+
+          # Test Health Check
+          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health)
+          if [ "$HEALTH_STATUS" != "200" ]; then
+            echo "Health check failed with status $HEALTH_STATUS"
+            kill $SERVER_PID
+            exit 1
+          fi
+          echo "✓ /api/health passed (HTTP 200)"
+
+          # Test Stations Endpoint
+          STATIONS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/stations)
+          if [ "$STATIONS_STATUS" != "200" ]; then
+            echo "Stations check failed with status $STATIONS_STATUS"
+            kill $SERVER_PID
+            exit 1
+          fi
+          echo "✓ /api/stations passed (HTTP 200)"
+
+          # Test Static Index Delivery
+          INDEX_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/index.html)
+          if [ "$INDEX_STATUS" != "200" ]; then
+            echo "Index check failed with status $INDEX_STATUS"
+            kill $SERVER_PID
+            exit 1
+          fi
+          echo "✓ /index.html passed (HTTP 200)"
+
+          kill $SERVER_PID
+          echo "All integration tests passed successfully."
